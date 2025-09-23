@@ -5,11 +5,8 @@
 #include <winternl.h>
 #include "WinAvoid.h"
 
-typedef VOID(NTAPI* PRtlInitAnsiString)(PANSI_STRING DestinationString, PCSTR SourceString);
-typedef VOID(NTAPI* PRtlAnsiStringToUnicodeString)(PUNICODE_STRING DestinationString, PCANSI_STRING SourceString, BOOLEAN AllocateDestinationString);
-typedef VOID(NTAPI* PRtlFreeUnicodeString)(PUNICODE_STRING UnicodeString);
-
-NtUserFindWindowEx p_NtUserFindWindowEx;
+NtUserFindWindowEx h_NtUserFindWindowEx;
+NtUserSetWindowPos b_NtUserSetWindowPos;
 PRtlInitAnsiString p_RtlInitAnsiString;
 PRtlAnsiStringToUnicodeString p_RtlAnsiStringToUnicodeString;
 PRtlFreeUnicodeString p_RtlFreeUnicodeString;
@@ -29,18 +26,21 @@ void RefreshTaskbarHandles()
     UNICODE_STRING uStr = { 0 };
     p_RtlInitAnsiString(&ansiStr, "Start");
     p_RtlAnsiStringToUnicodeString(&uStr, &ansiStr, TRUE);
+
     hwndTaskBar = FindWindowA("Shell_TrayWnd", NULL);
     if (hwndTaskBar) {
-        //hwndStart = FindWindowExA(hwndTaskBar, NULL, "Start", "Start");
-        hwndStart = p_NtUserFindWindowEx(hwndTaskBar, NULL, &uStr, &uStr, 0);
+        hwndStart = h_NtUserFindWindowEx(hwndTaskBar, NULL, &uStr, &uStr, 0);
         GetWindowRect(hwndTaskBar, &taskBarRect);
         GetWindowRect(hwndStart, &startRect);
-        SetWindowPos(hwndStart, HWND_TOP, 0, 0, 0, 0, (SWP_NOSIZE | SWP_NOZORDER));
+        b_NtUserSetWindowPos(hwndStart, HWND_TOP, 0, 0, 0, 0, (SWP_NOSIZE | SWP_NOZORDER));
         upperBound = taskBarRect.right - startRect.right;
-        //p_RtlFreeUnicodeString(&uStr);
+        
     }
     else {
         hwndStart = NULL;
+    }
+    if (p_RtlFreeUnicodeString != NULL) {
+        p_RtlFreeUnicodeString(&uStr);
     }
 }
 
@@ -93,10 +93,11 @@ int APIENTRY WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hInstPrev, _In_ PS
         return FALSE;
     }
 
-    p_NtUserFindWindowEx = (NtUserFindWindowEx)GetProcAddress(hWin32u, "NtUserFindWindowEx");
+    h_NtUserFindWindowEx = (NtUserFindWindowEx)GetProcAddress(hWin32u, "NtUserFindWindowEx");
+    b_NtUserSetWindowPos = (NtUserSetWindowPos)GetProcAddress(hWin32u, "NtUserSetWindowPos");
     p_RtlInitAnsiString = (PRtlInitAnsiString)GetProcAddress(hNtDLL, "RtlInitAnsiString");
     p_RtlAnsiStringToUnicodeString = (PRtlAnsiStringToUnicodeString)GetProcAddress(hNtDLL, "RtlAnsiStringToUnicodeString");
-    p_RtlFreeUnicodeString = (PRtlFreeUnicodeString)GetProcAddress(hNtDLL, "RltFreeUnicodeString");
+    p_RtlFreeUnicodeString = (PRtlFreeUnicodeString)GetProcAddress(hNtDLL, "RtlFreeUnicodeString");
     
     srand((unsigned)time(NULL));
     uTaskbarRestartMsg = RegisterWindowMessageA("TaskbarCreated");
