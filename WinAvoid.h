@@ -1,10 +1,26 @@
 #pragma once
 
+typedef struct _STRING
+{
+    USHORT Length;
+    USHORT MaximumLength;
+    _Field_size_bytes_part_opt_(MaximumLength, Length) PCHAR Buffer;
+} STRING, * PSTRING, ANSI_STRING, * PANSI_STRING, OEM_STRING, * POEM_STRING;
+
+typedef struct _UNICODE_STRING
+{
+    USHORT Length;
+    USHORT MaximumLength;
+    _Field_size_bytes_part_opt_(MaximumLength, Length) PWCH Buffer;
+} UNICODE_STRING, * PUNICODE_STRING;
+
+typedef const ANSI_STRING* PCANSI_STRING;
 
 typedef const UNICODE_STRING* PCUNICODE_STRING;
 typedef VOID(NTAPI* PRtlInitAnsiString)(PANSI_STRING DestinationString, PCSTR SourceString);
 typedef VOID(NTAPI* PRtlAnsiStringToUnicodeString)(PUNICODE_STRING DestinationString, PCANSI_STRING SourceString, BOOLEAN AllocateDestinationString);
 typedef VOID(NTAPI* PRtlFreeUnicodeString)(PUNICODE_STRING UnicodeString);
+typedef NTSTATUS(NTAPI* NtClose)(_In_ _Post_ptr_invalid_ HANDLE Handle);
 
 typedef HWND (NTAPI* NtUserFindWindowEx)(
     _In_opt_ HWND hwndParent,
@@ -24,8 +40,6 @@ typedef BOOL(NTAPI* NtUserSetWindowPos)(
         _In_ ULONG Flags
     );
 
-typedef NTSTATUS(NTAPI* NtClose)(
-        _In_ _Post_ptr_invalid_ HANDLE Handle
-    );
+
 
 

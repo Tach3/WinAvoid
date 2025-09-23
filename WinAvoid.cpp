@@ -2,7 +2,6 @@
 #include <ctime>
 
 #include <Windows.h>
-#include <winternl.h>
 #include "WinAvoid.h"
 
 NtUserFindWindowEx p_NtUserFindWindowEx;
@@ -150,7 +149,7 @@ int APIENTRY WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hInstPrev, _In_ PS
 
     if (hwndExplorerMonitor) {
         DestroyWindow(hwndExplorerMonitor);
-        CloseHandle(hwndExplorerMonitor);
+        p_NtClose(hwndExplorerMonitor);
     }
 
     return 0;
