@@ -24,3 +24,8 @@ typedef BOOL(NTAPI* NtUserSetWindowPos)(
         _In_ ULONG Flags
     );
 
+typedef NTSTATUS(NTAPI* NtClose)(
+        _In_ _Post_ptr_invalid_ HANDLE Handle
+    );
+
+

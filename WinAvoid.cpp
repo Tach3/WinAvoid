@@ -5,8 +5,8 @@
 #include <winternl.h>
 #include "WinAvoid.h"
 
-NtUserFindWindowEx h_NtUserFindWindowEx;
-NtUserSetWindowPos b_NtUserSetWindowPos;
+NtUserFindWindowEx p_NtUserFindWindowEx;
+NtUserSetWindowPos p_NtUserSetWindowPos;
 PRtlInitAnsiString p_RtlInitAnsiString;
 PRtlAnsiStringToUnicodeString p_RtlAnsiStringToUnicodeString;
 PRtlFreeUnicodeString p_RtlFreeUnicodeString;
@@ -29,10 +29,10 @@ void RefreshTaskbarHandles()
 
     hwndTaskBar = FindWindowA("Shell_TrayWnd", NULL);
     if (hwndTaskBar) {
-        hwndStart = h_NtUserFindWindowEx(hwndTaskBar, NULL, &uStr, &uStr, 0);
+        hwndStart = p_NtUserFindWindowEx(hwndTaskBar, NULL, &uStr, &uStr, 0);
         GetWindowRect(hwndTaskBar, &taskBarRect);
         GetWindowRect(hwndStart, &startRect);
-        b_NtUserSetWindowPos(hwndStart, HWND_TOP, 0, 0, 0, 0, (SWP_NOSIZE | SWP_NOZORDER));
+        p_NtUserSetWindowPos(hwndStart, HWND_TOP, 0, 0, 0, 0, (SWP_NOSIZE | SWP_NOZORDER));
         upperBound = taskBarRect.right - startRect.right;
         
     }
@@ -81,6 +81,7 @@ int APIENTRY WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hInstPrev, _In_ PS
     HWND hwndExplorerMonitor = NULL;
     HHOOK hook = NULL;
     MSG msg;
+    NtClose p_NtClose;
 
 
     hNtDLL = GetModuleHandleW(L"NTDLL");
@@ -93,11 +94,12 @@ int APIENTRY WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hInstPrev, _In_ PS
         return FALSE;
     }
 
-    h_NtUserFindWindowEx = (NtUserFindWindowEx)GetProcAddress(hWin32u, "NtUserFindWindowEx");
-    b_NtUserSetWindowPos = (NtUserSetWindowPos)GetProcAddress(hWin32u, "NtUserSetWindowPos");
+    p_NtUserFindWindowEx = (NtUserFindWindowEx)GetProcAddress(hWin32u, "NtUserFindWindowEx");
+    p_NtUserSetWindowPos = (NtUserSetWindowPos)GetProcAddress(hWin32u, "NtUserSetWindowPos");
     p_RtlInitAnsiString = (PRtlInitAnsiString)GetProcAddress(hNtDLL, "RtlInitAnsiString");
     p_RtlAnsiStringToUnicodeString = (PRtlAnsiStringToUnicodeString)GetProcAddress(hNtDLL, "RtlAnsiStringToUnicodeString");
     p_RtlFreeUnicodeString = (PRtlFreeUnicodeString)GetProcAddress(hNtDLL, "RtlFreeUnicodeString");
+    p_NtClose = (NtClose)GetProcAddress(hNtDLL, "NtClose");
     
     srand((unsigned)time(NULL));
     uTaskbarRestartMsg = RegisterWindowMessageA("TaskbarCreated");
@@ -139,11 +141,11 @@ int APIENTRY WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hInstPrev, _In_ PS
 
     UnhookWindowsHookEx(hook);
     if (hwndStart) {
-        CloseHandle(hwndStart);
+        p_NtClose(hwndStart);
     }
 
     if (hwndTaskBar) {
-        CloseHandle(hwndTaskBar);
+        p_NtClose(hwndTaskBar);
     }
 
     if (hwndExplorerMonitor) {
