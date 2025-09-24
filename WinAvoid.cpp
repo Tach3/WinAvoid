@@ -81,6 +81,7 @@ int APIENTRY WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hInstPrev, _In_ PS
     HHOOK hook = NULL;
     MSG msg;
     NtClose p_NtClose;
+    NtUserDestroyWindow p_NtUserDestroyWindow;
 
 
     hNtDLL = GetModuleHandleW(L"NTDLL");
@@ -99,6 +100,7 @@ int APIENTRY WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hInstPrev, _In_ PS
     p_RtlAnsiStringToUnicodeString = (PRtlAnsiStringToUnicodeString)GetProcAddress(hNtDLL, "RtlAnsiStringToUnicodeString");
     p_RtlFreeUnicodeString = (PRtlFreeUnicodeString)GetProcAddress(hNtDLL, "RtlFreeUnicodeString");
     p_NtClose = (NtClose)GetProcAddress(hNtDLL, "NtClose");
+    p_NtUserDestroyWindow = (NtUserDestroyWindow)GetProcAddress(hWin32u, "NtUserDestroyWindow");
     
     srand((unsigned)time(NULL));
     uTaskbarRestartMsg = RegisterWindowMessageA("TaskbarCreated");
@@ -148,7 +150,7 @@ int APIENTRY WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE hInstPrev, _In_ PS
     }
 
     if (hwndExplorerMonitor) {
-        DestroyWindow(hwndExplorerMonitor);
+        p_NtUserDestroyWindow(hwndExplorerMonitor);
         p_NtClose(hwndExplorerMonitor);
     }
 

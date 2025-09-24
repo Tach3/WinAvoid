@@ -21,6 +21,8 @@ typedef VOID(NTAPI* PRtlInitAnsiString)(PANSI_STRING DestinationString, PCSTR So
 typedef VOID(NTAPI* PRtlAnsiStringToUnicodeString)(PUNICODE_STRING DestinationString, PCANSI_STRING SourceString, BOOLEAN AllocateDestinationString);
 typedef VOID(NTAPI* PRtlFreeUnicodeString)(PUNICODE_STRING UnicodeString);
 typedef NTSTATUS(NTAPI* NtClose)(_In_ _Post_ptr_invalid_ HANDLE Handle);
+typedef BOOL(NTAPI* NtUserDestroyWindow)(_In_ HWND WindowHandle);
+
 
 typedef HWND (NTAPI* NtUserFindWindowEx)(
     _In_opt_ HWND hwndParent,
